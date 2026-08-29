@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Window Watch — Marina del Rey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0B2A3D;
+    --navy-deep:#071C29;
+    --foam:#8FBFB0;
+    --foam-bright:#B9DBCF;
+    --sand:#E8DCC8;
+    --coral:#D9714E;
+    --amber:#D9A441;
+    --fog:#C9D2D3;
+    --white:#FAFAF7;
+    --ink:#0B2A3D;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background: var(--navy-deep);
+    color: var(--white);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    padding-bottom: 60px;
+  }
+  .wrap{ max-width:520px; margin:0 auto; padding: 0 20px; }
+
+  /* ---- Header ---- */
+  header{
+    padding: 28px 20px 18px;
+    text-align:center;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--foam);
+    margin-bottom: 6px;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size: 28px;
+    letter-spacing: -0.01em;
+  }
+  .sub{
+    font-size: 13px;
+    color: rgba(250,250,247,0.55);
+    margin-top: 4px;
+  }
+
+  /* ---- Signal Flag Hero ---- */
+  .hero{
+    padding: 32px 20px 8px;
+    text-align:center;
+  }
+  .flag-frame{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:14px;
+  }
+  .mast{
+    width:3px;
+    height:38px;
+    background: linear-gradient(var(--fog), rgba(201,210,211,0.2));
+    border-radius: 2px;
+  }
+  .flag{
+    width: 200px;
+    height: 128px;
+    border-radius: 2px 10px 10px 2px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    transition: background 0.6s ease;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+    clip-path: polygon(0 0, 100% 12%, 100% 88%, 0 100%);
+  }
+  .flag.good{ background: linear-gradient(135deg, #4E9B82, #2E7A63); }
+  .flag.caution{ background: linear-gradient(135deg, var(--amber), #B5762A); }
+  .flag.bad{ background: linear-gradient(135deg, var(--coral), #A6482B); }
+  .flag.loading{ background: linear-gradient(135deg, #47607A, #2C3F52); }
+  .flag-icon{ font-size: 40px; }
+
+  .verdict{
+    font-family:'Fraunces', serif;
+    font-weight: 700;
+    font-size: 30px;
+    line-height:1.15;
+    margin-top: 4px;
+    letter-spacing:-0.01em;
+  }
+  .verdict-detail{
+    font-size: 14px;
+    color: rgba(250,250,247,0.65);
+    margin-top: 6px;
+    max-width: 340px;
+    margin-left:auto;
+    margin-right:auto;
+  }
+
+  /* ---- Data strip ---- */
+  .data-strip{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 28px 0;
+  }
+  .card{
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 16px 16px;
+  }
+  .card-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--foam);
+    margin-bottom: 8px;
+  }
+  .card-value{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 26px;
+    font-weight: 600;
+  }
+  .card-unit{ font-size:13px; color: rgba(250,250,247,0.5); margin-left:3px; }
+  .card-note{ font-size:12px; color: rgba(250,250,247,0.5); margin-top:4px; }
+
+  /* ---- Indoor input ---- */
+  .section-title{
+    font-family:'Fraunces', serif;
+    font-size: 18px;
+    font-weight:600;
+    margin-bottom: 4px;
+  }
+  .section-sub{
+    font-size:12px;
+    color: rgba(250,250,247,0.5);
+    margin-bottom: 14px;
+  }
+  .indoor-sources{
+    display:flex;
+    flex-direction:column;
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .indoor-card{
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius:14px;
+    padding: 16px 18px;
+  }
+  .indoor-card-head{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom: 12px;
+  }
+  .indoor-card-icon{ font-size:16px; }
+  .indoor-card-title{
+    font-family:'Fraunces', serif;
+    font-size: 15px;
+    font-weight:600;
+  }
+  .indoor-row{
+    display:flex;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .field{ flex:1; }
+  .field label{
+    display:block;
+    font-size:11px;
+    color: rgba(250,250,247,0.55);
+    margin-bottom: 6px;
+  }
+  .field input{
+    width:100%;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--white);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:15px;
+  }
+  .field input:focus{ outline:none; border-color: var(--foam); }
+  .btn{
+    width:100%;
+    background: var(--foam);
+    color: var(--navy-deep);
+    border:none;
+    border-radius: 8px;
+    padding: 12px;
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    transition: opacity 0.2s;
+  }
+  .btn:active{ opacity:0.8; }
+  .indoor-readout{
+    margin-top: 10px;
+    font-size:12px;
+    color: rgba(250,250,247,0.6);
+    text-align:center;
+  }
+  .indoor-summary{
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 14px 18px;
+    margin-bottom: 14px;
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    text-align:center;
+  }
+  .indoor-summary-col .lbl{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--foam);
+    margin-bottom: 4px;
+  }
+  .indoor-summary-col .val{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 16px;
+    font-weight:600;
+  }
+  .indoor-summary-col .val.empty{
+    color: rgba(250,250,247,0.3);
+    font-size:13px;
+    font-weight:400;
+  }
+
+  /* ---- Timeline ---- */
+  .timeline-wrap{ margin-bottom: 30px; }
+  .timeline{
+    display:flex;
+    gap: 3px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tick{
+    flex: 0 0 auto;
+    width: 34px;
+    text-align:center;
+  }
+  .tick-bar{
+    height: 46px;
+    border-radius: 5px;
+    margin-bottom: 6px;
+  }
+  .tick-bar.good{ background: #4E9B82; }
+  .tick-bar.caution{ background: var(--amber); }
+  .tick-bar.bad{ background: var(--coral); }
+  .tick-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: rgba(250,250,247,0.55);
+  }
+  .tick-label.now{ color: var(--foam-bright); font-weight:600; }
+
+  /* ---- Thresholds ---- */
+  details{
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
+  }
+  summary{
+    cursor:pointer;
+    font-family:'Fraunces', serif;
+    font-size:15px;
+    font-weight:600;
+    list-style:none;
+  }
+  summary::-webkit-details-marker{ display:none; }
+  .threshold-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-top: 16px;
+    gap: 12px;
+  }
+  .threshold-row label{ font-size:13px; color: rgba(250,250,247,0.75); }
+  .threshold-row input[type=number]{
+    width: 64px;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px;
+    padding: 6px 8px;
+    color: var(--white);
+    font-family:'IBM Plex Mono', monospace;
+    text-align:center;
+  }
+
+  footer{
+    text-align:center;
+    font-size: 11px;
+    color: rgba(250,250,247,0.35);
+    padding: 10px 20px 0;
+  }
+  .error-banner{
+    background: rgba(217,113,78,0.15);
+    border: 1px solid rgba(217,113,78,0.4);
+    color: var(--sand);
+    font-size: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display:none;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Marina del Rey · 90292</div>
+    <h1>Window Watch</h1>
+    <div class="sub">A signal for when the ocean air is worth letting in</div>
+  </header>
+
+  <div id="errorBanner" class="error-banner"></div>
+
+  <section class="hero">
+    <div class="flag-frame">
+      <div class="mast"></div>
+      <div id="flag" class="flag loading">
+        <span class="flag-icon" id="flagIcon">⛵</span>
+      </div>
+    </div>
+    <div class="verdict" id="verdict">Reading the wind…</div>
+    <div class="verdict-detail" id="verdictDetail">Checking outdoor air quality and humidity.</div>
+  </section>
+
+  <section class="data-strip">
+    <div class="card">
+      <div class="card-label">Outdoor AQI</div>
+      <div class="card-value" id="aqiValue">–</div>
+      <div class="card-note" id="aqiNote">loading…</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Outdoor Humidity</div>
+      <div class="card-value" id="humValue">–<span class="card-unit">%</span></div>
+      <div class="card-note" id="humNote">loading…</div>
+    </div>
+  </section>
+
+  <section class="timeline-wrap">
+    <div class="section-title">Next 24 hours</div>
+    <div class="section-sub">Each bar is the better-or-worse verdict for that hour</div>
+    <div class="timeline" id="timeline"></div>
+  </section>
+
+  <section>
+    <div class="section-title">Your indoor readings</div>
+    <div class="section-sub">From your three sensors — used to compare against outside</div>
+
+    <div class="indoor-summary" id="indoorSummary">
+      <div class="indoor-summary-col">
+        <div class="lbl">Thermostat</div>
+        <div class="val empty" id="sumThermostat">—</div>
+      </div>
+      <div class="indoor-summary-col">
+        <div class="lbl">Dehumidifier</div>
+        <div class="val empty" id="sumDehumidifier">—</div>
+      </div>
+      <div class="indoor-summary-col">
+        <div class="lbl">TempPro</div>
+        <div class="val empty" id="sumTemppro">—</div>
+      </div>
+    </div>
+
+    <div class="indoor-sources">
+      <div class="indoor-card">
+        <div class="indoor-card-head">
+          <span class="indoor-card-icon">🌡️</span>
+          <span class="indoor-card-title">Building Thermostat</span>
+        </div>
+        <div class="indoor-row">
+          <div class="field">
+            <label>Temp (°F)</label>
+            <input type="number" id="thermostatTemp" placeholder="71.0" step="0.1">
+          </div>
+          <div class="field">
+            <label>Humidity (%)</label>
+            <input type="number" id="thermostatHum" placeholder="55" step="1">
+          </div>
+        </div>
+        <button class="btn" data-source="thermostat">Save reading</button>
+        <div class="indoor-readout" id="readoutThermostat"></div>
+      </div>
+
+      <div class="indoor-card">
+        <div class="indoor-card-head">
+          <span class="indoor-card-icon">💧</span>
+          <span class="indoor-card-title">SmartHome Dehumidifier</span>
+        </div>
+        <div class="indoor-row">
+          <div class="field">
+            <label>Temp (°F)</label>
+            <input type="number" id="dehumidifierTemp" placeholder="72.0" step="0.1">
+          </div>
+          <div class="field">
+            <label>Humidity (%)</label>
+            <input type="number" id="dehumidifierHum" placeholder="52" step="1">
+          </div>
+        </div>
+        <button class="btn" data-source="dehumidifier">Save reading</button>
+        <div class="indoor-readout" id="readoutDehumidifier"></div>
+      </div>
+
+      <div class="indoor-card">
+        <div class="indoor-card-head">
+          <span class="indoor-card-icon">📟</span>
+          <span class="indoor-card-title">TempPro Hygrometer</span>
+        </div>
+        <div class="indoor-row">
+          <div class="field">
+            <label>Temp (°F)</label>
+            <input type="number" id="tempproTemp" placeholder="71.2" step="0.1">
+          </div>
+          <div class="field">
+            <label>Humidity (%)</label>
+            <input type="number" id="tempproHum" placeholder="58" step="1">
+          </div>
+        </div>
+        <button class="btn" data-source="temppro">Save reading</button>
+        <div class="indoor-readout" id="readoutTemppro"></div>
+      </div>
+    </div>
+  </section>
+
+  <details>
+    <summary>Adjust thresholds</summary>
+    <div class="threshold-row">
+      <label>Good AQI below</label>
+      <input type="number" id="thAqiGood" value="50">
+    </div>
+    <div class="threshold-row">
+      <label>Caution AQI below</label>
+      <input type="number" id="thAqiCaution" value="100">
+    </div>
+    <div class="threshold-row">
+      <label>Good humidity below</label>
+      <input type="number" id="thHumGood" value="60">
+    </div>
+    <div class="threshold-row">
+      <label>Caution humidity below</label>
+      <input type="number" id="thHumCaution" value="72">
+    </div>
+    <button class="btn" id="saveThresholds" style="margin-top:14px;">Save thresholds</button>
+  </details>
+
+  <footer>Outdoor data from Open-Meteo · updates on refresh</footer>
+</div>
+
+<script>
+const LAT = 33.9806, LON = -118.4517;
+let thresholds = { aqiGood: 50, aqiCaution: 100, humGood: 60, humCaution: 72 };
+
+function verdictFor(aqi, hum) {
+  const aqiLevel = aqi <= thresholds.aqiGood ? 0 : (aqi <= thresholds.aqiCaution ? 1 : 2);
+  const humLevel = hum <= thresholds.humGood ? 0 : (hum <= thresholds.humCaution ? 1 : 2);
+  return Math.max(aqiLevel, humLevel); // 0 good, 1 caution, 2 bad
+}
+
+function levelClass(level) {
+  return level === 0 ? 'good' : (level === 1 ? 'caution' : 'bad');
+}
+
+async function loadThresholds() {
+  try {
+    const r = await window.storage.get('thresholds', false);
+    if (r && r.value) {
+      thresholds = JSON.parse(r.value);
+    }
+  } catch (e) { /* no saved thresholds yet */ }
+  document.getElementById('thAqiGood').value = thresholds.aqiGood;
+  document.getElementById('thAqiCaution').value = thresholds.aqiCaution;
+  document.getElementById('thHumGood').value = thresholds.humGood;
+  document.getElementById('thHumCaution').value = thresholds.humCaution;
+}
+
+const INDOOR_SOURCES = [
+  { key: 'thermostat', label: 'Thermostat', tempId: 'thermostatTemp', humId: 'thermostatHum', readoutId: 'readoutThermostat', sumId: 'sumThermostat' },
+  { key: 'dehumidifier', label: 'Dehumidifier', tempId: 'dehumidifierTemp', humId: 'dehumidifierHum', readoutId: 'readoutDehumidifier', sumId: 'sumDehumidifier' },
+  { key: 'temppro', label: 'TempPro', tempId: 'tempproTemp', humId: 'tempproHum', readoutId: 'readoutTemppro', sumId: 'sumTemppro' },
+];
+
+async function loadIndoorSource(source) {
+  try {
+    const r = await window.storage.get('indoor-' + source.key, false);
+    if (r && r.value) {
+      const data = JSON.parse(r.value);
+      document.getElementById(source.tempId).value = data.temp ?? '';
+      document.getElementById(source.humId).value = data.hum ?? '';
+      const when = new Date(data.savedAt);
+      document.getElementById(source.readoutId).textContent =
+        `Last saved: ${data.temp}°F, ${data.hum}% at ${when.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'})}`;
+      const sumEl = document.getElementById(source.sumId);
+      sumEl.textContent = `${data.temp}°F · ${data.hum}%`;
+      sumEl.classList.remove('empty');
+    }
+  } catch (e) { /* no saved reading yet for this source */ }
+}
+
+async function loadAllIndoor() {
+  for (const source of INDOOR_SOURCES) {
+    await loadIndoorSource(source);
+  }
+}
+
+document.querySelectorAll('[data-source]').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const key = btn.getAttribute('data-source');
+    const source = INDOOR_SOURCES.find(s => s.key === key);
+    const temp = document.getElementById(source.tempId).value;
+    const hum = document.getElementById(source.humId).value;
+    const payload = { temp, hum, savedAt: Date.now() };
+    const readoutEl = document.getElementById(source.readoutId);
+    try {
+      await window.storage.set('indoor-' + key, JSON.stringify(payload), false);
+      readoutEl.textContent = 'Saved.';
+      setTimeout(() => loadIndoorSource(source), 800);
+    } catch (e) {
+      readoutEl.textContent = 'Could not save — try again.';
+    }
+  });
+});
+
+document.getElementById('saveThresholds').addEventListener('click', async () => {
+  thresholds = {
+    aqiGood: Number(document.getElementById('thAqiGood').value) || 50,
+    aqiCaution: Number(document.getElementById('thAqiCaution').value) || 100,
+    humGood: Number(document.getElementById('thHumGood').value) || 60,
+    humCaution: Number(document.getElementById('thHumCaution').value) || 72,
+  };
+  try {
+    await window.storage.set('thresholds', JSON.stringify(thresholds), false);
+  } catch (e) { console.error('Could not save thresholds', e); }
+  render();
+});
+
+let liveData = null;
+
+async function fetchData() {
+  const errorBanner = document.getElementById('errorBanner');
+  errorBanner.style.display = 'none';
+  try {
+    const [aqiRes, wxRes] = await Promise.all([
+      fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${LAT}&longitude=${LON}&hourly=us_aqi,pm2_5&timezone=auto&forecast_days=2`),
+      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&hourly=relative_humidity_2m&timezone=auto&forecast_days=2`)
+    ]);
+    if (!aqiRes.ok || !wxRes.ok) throw new Error('Fetch failed');
+    const aqiJson = await aqiRes.json();
+    const wxJson = await wxRes.json();
+
+    const times = aqiJson.hourly.time;
+    const aqiVals = aqiJson.hourly.us_aqi;
+    const pm25Vals = aqiJson.hourly.pm2_5;
+    const humVals = wxJson.hourly.relative_humidity_2m;
+
+    const now = new Date();
+    let nowIdx = 0;
+    let bestDiff = Infinity;
+    times.forEach((t, i) => {
+      const diff = Math.abs(new Date(t) - now);
+      if (diff < bestDiff) { bestDiff = diff; nowIdx = i; }
+    });
+
+    liveData = { times, aqiVals, pm25Vals, humVals, nowIdx };
+    render();
+  } catch (e) {
+    errorBanner.style.display = 'block';
+    errorBanner.textContent = 'Could not reach the outdoor air data source. Try refreshing in a moment.';
+    document.getElementById('verdict').textContent = 'No signal';
+    document.getElementById('verdictDetail').textContent = 'Outdoor data unavailable right now.';
+  }
+}
+
+function render() {
+  if (!liveData) return;
+  const { times, aqiVals, pm25Vals, humVals, nowIdx } = liveData;
+  const aqi = aqiVals[nowIdx];
+  const hum = humVals[nowIdx];
+  const pm25 = pm25Vals[nowIdx];
+
+  document.getElementById('aqiValue').textContent = Math.round(aqi);
+  document.getElementById('aqiNote').textContent = `PM2.5 · ${pm25.toFixed(1)} µg/m³`;
+  document.getElementById('humValue').innerHTML = `${Math.round(hum)}<span class="card-unit">%</span>`;
+  document.getElementById('humNote').textContent = 'relative humidity, outside';
+
+  const level = verdictFor(aqi, hum);
+  const flag = document.getElementById('flag');
+  const flagIcon = document.getElementById('flagIcon');
+  flag.className = 'flag ' + levelClass(level);
+
+  const verdictEl = document.getElementById('verdict');
+  const detailEl = document.getElementById('verdictDetail');
+
+  if (level === 0) {
+    flagIcon.textContent = '🟢';
+    verdictEl.textContent = 'Open the windows';
+    detailEl.textContent = `Outside air is cleaner and drier than typical indoor conditions. AQI ${Math.round(aqi)}, humidity ${Math.round(hum)}%.`;
+  } else if (level === 1) {
+    flagIcon.textContent = '🟡';
+    verdictEl.textContent = 'Use your judgment';
+    detailEl.textContent = `Conditions are borderline — AQI ${Math.round(aqi)}, humidity ${Math.round(hum)}%. A short airing-out is fine, but don't leave windows open long.`;
+  } else {
+    flagIcon.textContent = '🔴';
+    verdictEl.textContent = 'Keep windows shut';
+    detailEl.textContent = `Outside air won't help right now — AQI ${Math.round(aqi)}, humidity ${Math.round(hum)}%. Let the AC and dehumidifier handle it.`;
+  }
+
+  renderTimeline();
+}
+
+function renderTimeline() {
+  const { times, aqiVals, humVals, nowIdx } = liveData;
+  const container = document.getElementById('timeline');
+  container.innerHTML = '';
+  const endIdx = Math.min(nowIdx + 24, times.length);
+  for (let i = nowIdx; i < endIdx; i++) {
+    const level = verdictFor(aqiVals[i], humVals[i]);
+    const d = new Date(times[i]);
+    const hourLabel = d.toLocaleTimeString([], { hour: 'numeric' }).replace(' ', '');
+    const tick = document.createElement('div');
+    tick.className = 'tick';
+    tick.innerHTML = `
+      <div class="tick-bar ${levelClass(level)}"></div>
+      <div class="tick-label ${i === nowIdx ? 'now' : ''}">${i === nowIdx ? 'now' : hourLabel}</div>
+    `;
+    container.appendChild(tick);
+  }
+}
+
+(async function init() {
+  await loadThresholds();
+  await loadAllIndoor();
+  await fetchData();
+})();
+</script>
+</body>
+</html>
