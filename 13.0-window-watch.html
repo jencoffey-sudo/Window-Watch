@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Window Watch — Marina del Rey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0B2A3D;
+    --navy-deep:#071C29;
+    --foam:#8FBFB0;
+    --foam-bright:#B9DBCF;
+    --sand:#E8DCC8;
+    --coral:#D9714E;
+    --amber:#D9A441;
+    --fog:#C9D2D3;
+    --white:#FAFAF7;
+    --ink:#0B2A3D;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background: var(--navy-deep);
+    color: var(--white);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    padding-bottom: 60px;
+  }
+  .wrap{ max-width:520px; margin:0 auto; padding: 0 20px; }
+
+  /* ---- Header ---- */
+  header{
+    padding: 28px 20px 18px;
+    text-align:center;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--foam);
+    margin-bottom: 6px;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size: 28px;
+    letter-spacing: -0.01em;
+  }
+  .sub{
+    font-size: 13px;
+    color: rgba(250,250,247,0.55);
+    margin-top: 4px;
+  }
+
+  /* ---- Signal Flag Hero ---- */
+  .hero{
+    padding: 28px 20px 8px;
+    text-align:center;
+  }
+  .window-outer{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:16px;
+  }
+  .window-frame{
+    position:relative;
+    width: 260px;
+    height: 190px;
+    border-radius: 6px;
+    background: linear-gradient(180deg, #EFE7D8, #DCD1BC);
+    padding: 10px;
+    box-shadow: 0 16px 34px rgba(0,0,0,0.4);
+  }
+  .window-scene{
+    width:100%;
+    height:100%;
+    display:block;
+    border-radius: 2px;
+    overflow:hidden;
+    transition: filter 0.6s ease;
+  }
+  .window-mullion-v{
+    position:absolute;
+    top:10px; bottom:10px; left:50%;
+    width:8px;
+    margin-left:-4px;
+    background: linear-gradient(180deg, #EFE7D8, #DCD1BC);
+  }
+  .window-mullion-h{
+    position:absolute;
+    left:10px; right:10px; top:50%;
+    height:8px;
+    margin-top:-4px;
+    background: linear-gradient(180deg, #EFE7D8, #DCD1BC);
+  }
+  .window-sill{
+    width: 288px;
+    height: 12px;
+    background: linear-gradient(180deg, #DCD1BC, #C7BA9E);
+    border-radius: 0 0 6px 6px;
+    margin-top: -2px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+  }
+  .status-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(250,250,247,0.75);
+  }
+  .status-dot{
+    width: 9px; height:9px;
+    border-radius:50%;
+    transition: background 0.6s ease;
+  }
+  .status-dot.good{ background:#4E9B82; box-shadow:0 0 8px #4E9B82; }
+  .status-dot.caution{ background: var(--amber); box-shadow:0 0 8px var(--amber); }
+  .status-dot.bad{ background: var(--coral); box-shadow:0 0 8px var(--coral); }
+  .status-dot.loading{ background:#47607A; }
+
+  .verdict{
+    font-family:'Fraunces', serif;
+    font-weight: 700;
+    font-size: 30px;
+    line-height:1.15;
+    margin-top: 4px;
+    letter-spacing:-0.01em;
+  }
+  .verdict-detail{
+    font-size: 14px;
+    color: rgba(250,250,247,0.65);
+    margin-top: 6px;
+    max-width: 340px;
+    margin-left:auto;
+    margin-right:auto;
+  }
+
+  /* ---- Data strip ---- */
+  .data-strip{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 28px 0;
+  }
+  .card{
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 16px 16px;
+  }
+  .card-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--foam);
+    margin-bottom: 8px;
+  }
+  .card-value{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 26px;
+    font-weight: 600;
+  }
+  .card-unit{ font-size:13px; color: rgba(250,250,247,0.5); margin-left:3px; }
+  .card-note{ font-size:12px; color: rgba(250,250,247,0.5); margin-top:4px; }
+  .last-updated{
+    text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: rgba(250,250,247,0.35);
+    margin-top: -18px;
+    margin-bottom: 24px;
+  }
+
+  /* ---- Section headers ---- */
+  .section-title{
+    font-family:'Fraunces', serif;
+    font-size: 18px;
+    font-weight:600;
+    margin-bottom: 4px;
+  }
+  .section-sub{
+    font-size:12px;
+    color: rgba(250,250,247,0.5);
+    margin-bottom: 14px;
+  }
+  .btn{
+    width:100%;
+    background: var(--foam);
+    color: var(--navy-deep);
+    border:none;
+    border-radius: 8px;
+    padding: 12px;
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    transition: opacity 0.2s;
+  }
+  .btn:active{ opacity:0.8; }
+
+  /* ---- Humidity Outlook ---- */
+  .outlook-wrap{ margin-bottom: 28px; }
+  .outlook-card{
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 20px 18px 14px;
+  }
+  .outlook-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    margin-bottom: 10px;
+  }
+  .outlook-current-val{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 40px;
+    font-weight:600;
+    line-height:1;
+  }
+  .outlook-current-lbl{
+    font-size:11px;
+    color: rgba(250,250,247,0.5);
+    margin-top:4px;
+  }
+  .outlook-dewpoint{ text-align:right; }
+  .outlook-dewpoint-lbl{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color: var(--foam);
+    margin-bottom:4px;
+  }
+  .outlook-dewpoint-val{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 20px;
+    font-weight:600;
+  }
+  .outlook-desc{
+    font-size: 13px;
+    color: rgba(250,250,247,0.75);
+    margin-bottom: 14px;
+    line-height:1.4;
+  }
+  .outlook-chart{
+    width:100%;
+    height: 70px;
+    display:block;
+  }
+  .outlook-axis{
+    display:flex;
+    justify-content:space-between;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: rgba(250,250,247,0.4);
+    margin-top: 4px;
+  }
+
+  /* ---- Thresholds ---- */
+  details{
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
+  }
+  summary{
+    cursor:pointer;
+    font-family:'Fraunces', serif;
+    font-size:15px;
+    font-weight:600;
+    list-style:none;
+  }
+  summary::-webkit-details-marker{ display:none; }
+  .threshold-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-top: 16px;
+    gap: 12px;
+  }
+  .threshold-row label{ font-size:13px; color: rgba(250,250,247,0.75); }
+  .threshold-row input[type=number]{
+    width: 64px;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px;
+    padding: 6px 8px;
+    color: var(--white);
+    font-family:'IBM Plex Mono', monospace;
+    text-align:center;
+  }
+
+  footer{
+    text-align:center;
+    font-size: 11px;
+    color: rgba(250,250,247,0.35);
+    padding: 10px 20px 0;
+  }
+  .error-banner{
+    background: rgba(217,113,78,0.15);
+    border: 1px solid rgba(217,113,78,0.4);
+    color: var(--sand);
+    font-size: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display:none;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Marina del Rey · 90292</div>
+    <h1>Window Watch</h1>
+    <div class="sub">A signal for when the ocean air is worth letting in</div>
+  </header>
+
+  <div id="errorBanner" class="error-banner"></div>
+
+  <section class="hero">
+    <div class="window-outer">
+      <div class="window-frame">
+        <svg id="windowScene" class="window-scene" viewBox="0 0 260 190" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop id="skyStop1" offset="0%" stop-color="#47607A"/>
+              <stop id="skyStop2" offset="100%" stop-color="#2C3F52"/>
+            </linearGradient>
+            <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop id="waterStop1" offset="0%" stop-color="#1E3A46"/>
+              <stop id="waterStop2" offset="100%" stop-color="#14262E"/>
+            </linearGradient>
+          </defs>
+          <!-- sky -->
+          <rect x="0" y="0" width="260" height="120" fill="url(#skyGrad)"/>
+          <!-- distant breakwater line -->
+          <g id="breakwater">
+            <rect x="0" y="112" width="260" height="6" fill="#5b6b6a"/>
+            <rect x="14" y="104" width="6" height="10" fill="#5b6b6a"/>
+            <rect x="40" y="107" width="5" height="7" fill="#5b6b6a"/>
+            <rect x="70" y="106" width="5" height="8" fill="#5b6b6a"/>
+            <rect x="120" y="105" width="5" height="9" fill="#5b6b6a"/>
+            <rect x="170" y="107" width="5" height="7" fill="#5b6b6a"/>
+            <rect x="210" y="106" width="5" height="8" fill="#5b6b6a"/>
+            <!-- breakwater light marker -->
+            <rect x="234" y="98" width="4" height="16" fill="#8b8b7a"/>
+            <circle id="breakwaterLight" cx="236" cy="97" r="3.2" fill="#ff5c4d"/>
+          </g>
+          <!-- water -->
+          <rect x="0" y="118" width="260" height="72" fill="url(#waterGrad)"/>
+          <!-- water ripple lines -->
+          <g id="ripples" stroke-linecap="round" opacity="0.35">
+            <path d="M10,135 q10,-3 20,0 t20,0 t20,0" stroke="#cfe3e6" stroke-width="1.2" fill="none"/>
+            <path d="M140,148 q10,-3 20,0 t20,0 t20,0" stroke="#cfe3e6" stroke-width="1.2" fill="none"/>
+            <path d="M30,165 q10,-3 20,0 t20,0 t20,0" stroke="#cfe3e6" stroke-width="1.2" fill="none"/>
+            <path d="M160,175 q10,-3 20,0 t20,0 t20,0" stroke="#cfe3e6" stroke-width="1.2" fill="none"/>
+          </g>
+          <!-- boats on the channel -->
+          <g id="boat1" transform="translate(60,140)">
+            <path d="M-10,6 L10,6 L7,10 L-7,10 Z" fill="#2C3F52"/>
+            <rect x="-1" y="-14" width="1.5" height="20" fill="#e8dcc8"/>
+            <path d="M0.5,-14 L0.5,4 L11,4 Z" fill="#cfe3e6"/>
+          </g>
+          <g id="boat2" transform="translate(170,155) scale(0.8)">
+            <path d="M-10,6 L10,6 L7,10 L-7,10 Z" fill="#2C3F52"/>
+            <rect x="-1" y="-12" width="1.5" height="18" fill="#e8dcc8"/>
+            <path d="M0.5,-12 L0.5,4 L10,4 Z" fill="#cfe3e6"/>
+          </g>
+          <!-- haze overlay, opacity driven by air quality -->
+          <rect id="hazeOverlay" x="0" y="0" width="260" height="120" fill="#D9A441" opacity="0"/>
+        </svg>
+        <div class="window-mullion-v"></div>
+        <div class="window-mullion-h"></div>
+      </div>
+      <div class="window-sill"></div>
+      <div class="status-pill">
+        <span class="status-dot loading" id="statusDot"></span>
+        <span id="statusLabel">reading conditions</span>
+      </div>
+    </div>
+    <div class="verdict" id="verdict">Reading the wind…</div>
+    <div class="verdict-detail" id="verdictDetail">Checking outdoor air quality and humidity.</div>
+  </section>
+
+  <section class="data-strip">
+    <div class="card">
+      <div class="card-label">Outdoor AQI</div>
+      <div class="card-value" id="aqiValue">–</div>
+      <div class="card-note" id="aqiNote">loading…</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Outdoor Humidity</div>
+      <div class="card-value" id="humValue">–<span class="card-unit">%</span></div>
+      <div class="card-note" id="humNote">loading…</div>
+    </div>
+  </section>
+  <div id="lastUpdated" class="last-updated"></div>
+
+  <section class="outlook-wrap">
+    <div class="section-title">Humidity Outlook</div>
+    <div class="section-sub" id="outlookSub">Next 24 hours, forecast</div>
+    <div class="outlook-card">
+      <div class="outlook-top">
+        <div class="outlook-current">
+          <div class="outlook-current-val" id="outlookNow">–%</div>
+          <div class="outlook-current-lbl">now</div>
+        </div>
+        <div class="outlook-dewpoint">
+          <div class="outlook-dewpoint-lbl">Dew Point</div>
+          <div class="outlook-dewpoint-val" id="outlookDewpoint">–°</div>
+        </div>
+      </div>
+      <div class="outlook-desc" id="outlookDesc">Loading forecast…</div>
+      <svg id="outlookChart" class="outlook-chart" viewBox="0 0 720 120" preserveAspectRatio="none"></svg>
+      <div class="outlook-axis" id="outlookAxis"></div>
+    </div>
+  </section>
+
+  <details>
+    <summary>Adjust thresholds</summary>
+    <div class="threshold-row">
+      <label>Good AQI below</label>
+      <input type="number" id="thAqiGood" value="50">
+    </div>
+    <div class="threshold-row">
+      <label>Caution AQI below</label>
+      <input type="number" id="thAqiCaution" value="100">
+    </div>
+    <div class="threshold-row">
+      <label>Good humidity below</label>
+      <input type="number" id="thHumGood" value="60">
+    </div>
+    <div class="threshold-row">
+      <label>Caution humidity below</label>
+      <input type="number" id="thHumCaution" value="72">
+    </div>
+    <button class="btn" id="saveThresholds" style="margin-top:14px;">Save thresholds</button>
+  </details>
+
+  <footer>Outdoor data from Open-Meteo, PurpleAir & UCLA MAC · updates on refresh</footer>
+</div>
+
+<script>
+const LAT = 33.9806, LON = -118.4517;
+const ZIP = '90292';
+const AIRNOW_API_KEY = '0560C6F6-698C-466F-B0B7-211B6D431DBC';
+let thresholds = { aqiGood: 50, aqiCaution: 100, humGood: 60, humCaution: 72 };
+
+function storageGet(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+
+function storageSet(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch (e) { return false; }
+}
+
+function verdictFor(aqi, hum) {
+  const aqiLevel = aqi <= thresholds.aqiGood ? 0 : (aqi <= thresholds.aqiCaution ? 1 : 2);
+  const humLevel = hum <= thresholds.humGood ? 0 : (hum <= thresholds.humCaution ? 1 : 2);
+  return Math.max(aqiLevel, humLevel); // 0 good, 1 caution, 2 bad
+}
+
+function levelClass(level) {
+  return level === 0 ? 'good' : (level === 1 ? 'caution' : 'bad');
+}
+
+async function loadThresholds() {
+  const saved = storageGet('thresholds');
+  if (saved) thresholds = saved;
+  document.getElementById('thAqiGood').value = thresholds.aqiGood;
+  document.getElementById('thAqiCaution').value = thresholds.aqiCaution;
+  document.getElementById('thHumGood').value = thresholds.humGood;
+  document.getElementById('thHumCaution').value = thresholds.humCaution;
+}
+
+document.getElementById('saveThresholds').addEventListener('click', () => {
+  thresholds = {
+    aqiGood: Number(document.getElementById('thAqiGood').value) || 50,
+    aqiCaution: Number(document.getElementById('thAqiCaution').value) || 100,
+    humGood: Number(document.getElementById('thHumGood').value) || 60,
+    humCaution: Number(document.getElementById('thHumCaution').value) || 72,
+  };
+  storageSet('thresholds', thresholds);
+  render();
+});
+
+let liveData = null;
+
+const PURPLEAIR_API_KEY = '8B9C45FD-A42D-11F1-9E30-4201AC1DC129';
+
+// Standard EPA breakpoints for converting PM2.5 concentration (µg/m³) to AQI
+function pm25ToAqi(pm) {
+  const bp = [
+    [0.0, 12.0, 0, 50],
+    [12.1, 35.4, 51, 100],
+    [35.5, 55.4, 101, 150],
+    [55.5, 150.4, 151, 200],
+    [150.5, 250.4, 201, 300],
+    [250.5, 350.4, 301, 400],
+    [350.5, 500.4, 401, 500],
+  ];
+  for (const [cLow, cHigh, aLow, aHigh] of bp) {
+    if (pm >= cLow && pm <= cHigh) {
+      return Math.round(((aHigh - aLow) / (cHigh - cLow)) * (pm - cLow) + aLow);
+    }
+  }
+  return pm > 500.4 ? 500 : 0;
+}
+
+function haversineMiles(lat1, lon1, lat2, lon2) {
+  const toRad = d => d * Math.PI / 180;
+  const R = 3958.8;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+async function fetchPurpleAirAqi() {
+  try {
+    const pad = 0.035; // roughly a 2-3 mile box around LAT/LON
+    const url = `https://api.purpleair.com/v1/sensors?fields=pm2.5,latitude,longitude,name,last_seen&location_type=0&nwlat=${LAT+pad}&nwlng=${LON-pad}&selat=${LAT-pad}&selng=${LON+pad}`;
+    const res = await fetch(url, { headers: { 'X-API-Key': PURPLEAIR_API_KEY } });
+    if (!res.ok) throw new Error('PurpleAir fetch failed: ' + res.status);
+    const json = await res.json();
+    if (!json.data || json.data.length === 0) return null;
+
+    const fields = json.fields;
+    const idx = name => fields.indexOf(name);
+    const nowSec = Date.now() / 1000;
+
+    const candidates = [];
+    json.data.forEach(row => {
+      const lat = row[idx('latitude')];
+      const lon = row[idx('longitude')];
+      const lastSeen = row[idx('last_seen')];
+      const pm25 = row[idx('pm2.5')];
+      if (lat == null || lon == null || pm25 == null) return;
+      if (nowSec - lastSeen > 3600) return; // skip stale sensors
+      const dist = haversineMiles(LAT, LON, lat, lon);
+      candidates.push({ pm25, name: row[idx('name')], distance: dist });
+    });
+
+    if (candidates.length === 0) return null;
+
+    // Average the nearest few sensors instead of trusting a single one —
+    // individual low-cost sensors can have placement quirks (shelter, exhaust vents,
+    // salt-air drift) that make any one reading unreliable on its own.
+    candidates.sort((a, b) => a.distance - b.distance);
+    const nearest = candidates.slice(0, Math.min(3, candidates.length));
+    const avgPm25 = nearest.reduce((sum, s) => sum + s.pm25, 0) / nearest.length;
+    const maxDistance = Math.max(...nearest.map(s => s.distance));
+
+    return {
+      aqi: pm25ToAqi(avgPm25),
+      pm25: avgPm25,
+      sensorCount: nearest.length,
+      maxDistanceMiles: maxDistance
+    };
+  } catch (e) {
+    return null;
+  }
+}
+
+async function fetchMacConditions() {
+  try {
+    const macUrl = 'http://www.marinaaquaticcenter.org/weather/MAC_Conditions.htm';
+    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(macUrl)}`;
+    const res = await fetch(proxyUrl);
+    if (!res.ok) throw new Error('MAC fetch failed');
+    const html = await res.text();
+    // Strip HTML tags first — the real page wraps labels/values in <b> tags etc.,
+    // which breaks a plain regex expecting "Temp: 74.2" with nothing in between.
+    const text = html.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ');
+
+    const tempMatch = text.match(/Temp:\s*([\d.]+)/i);
+    const humMatch = text.match(/Hum:\s*([\d.]+)\s*%/i);
+    const timeMatch = text.match(/Conditions as of:\s*([\d:apm]+)/i);
+
+    if (!tempMatch || !humMatch) return null;
+    return {
+      tempF: parseFloat(tempMatch[1]),
+      humidity: parseFloat(humMatch[1]),
+      observedAt: timeMatch ? timeMatch[1] : null
+    };
+  } catch (e) {
+    return null;
+  }
+}
+
+async function fetchData() {
+  const errorBanner = document.getElementById('errorBanner');
+  errorBanner.style.display = 'none';
+  try {
+    const [aqiRes, wxRes, purpleAir, macConditions] = await Promise.all([
+      fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${LAT}&longitude=${LON}&hourly=us_aqi,pm2_5&timezone=auto&forecast_days=2`),
+      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&hourly=relative_humidity_2m,dew_point_2m&timezone=auto&forecast_days=2`),
+      fetchPurpleAirAqi(),
+      fetchMacConditions()
+    ]);
+    if (!aqiRes.ok || !wxRes.ok) throw new Error('Fetch failed');
+    const aqiJson = await aqiRes.json();
+    const wxJson = await wxRes.json();
+
+    const times = aqiJson.hourly.time;
+    const aqiVals = aqiJson.hourly.us_aqi;
+    const pm25Vals = aqiJson.hourly.pm2_5;
+    const humVals = wxJson.hourly.relative_humidity_2m;
+    const dewVals = wxJson.hourly.dew_point_2m;
+
+    const now = new Date();
+    let nowIdx = 0;
+    let bestDiff = Infinity;
+    times.forEach((t, i) => {
+      const diff = Math.abs(new Date(t) - now);
+      if (diff < bestDiff) { bestDiff = diff; nowIdx = i; }
+    });
+
+    liveData = { times, aqiVals, pm25Vals, humVals, dewVals, nowIdx, purpleAir, macConditions };
+    render();
+  } catch (e) {
+    errorBanner.style.display = 'block';
+    errorBanner.textContent = 'Could not reach the outdoor air data source. Try refreshing in a moment.';
+    document.getElementById('verdict').textContent = 'No signal';
+    document.getElementById('verdictDetail').textContent = 'Outdoor data unavailable right now.';
+  }
+}
+
+function render() {
+  if (!liveData) return;
+  const { times, aqiVals, pm25Vals, humVals, nowIdx, purpleAir, macConditions } = liveData;
+  const modeledAqi = aqiVals[nowIdx];
+  const aqi = (purpleAir && typeof purpleAir.aqi === 'number') ? purpleAir.aqi : modeledAqi;
+  const modeledHum = humVals[nowIdx];
+  const hum = (macConditions && typeof macConditions.humidity === 'number') ? macConditions.humidity : modeledHum;
+  const pm25 = pm25Vals[nowIdx];
+
+  document.getElementById('aqiValue').textContent = Math.round(aqi);
+  if (purpleAir) {
+    document.getElementById('aqiNote').textContent = `PurpleAir · avg of ${purpleAir.sensorCount} sensors within ${purpleAir.maxDistanceMiles.toFixed(1)} mi`;
+  } else {
+    document.getElementById('aqiNote').textContent = `PM2.5 · ${pm25.toFixed(1)} µg/m³ (modeled)`;
+  }
+  document.getElementById('humValue').innerHTML = `${Math.round(hum)}<span class="card-unit">%</span>`;
+  if (macConditions) {
+    document.getElementById('humNote').textContent = `UCLA MAC station · next door${macConditions.observedAt ? ' · ' + macConditions.observedAt : ''}`;
+  } else {
+    document.getElementById('humNote').textContent = 'relative humidity, outside (modeled)';
+  }
+
+  const now = new Date();
+  document.getElementById('lastUpdated').textContent =
+    `Outdoor data as of ${now.toLocaleDateString([], {month:'short', day:'numeric'})}, ${now.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'})}`;
+
+  const level = verdictFor(aqi, hum);
+  const statusDot = document.getElementById('statusDot');
+  const statusLabel = document.getElementById('statusLabel');
+  statusDot.className = 'status-dot ' + levelClass(level);
+
+  const verdictEl = document.getElementById('verdict');
+  const detailEl = document.getElementById('verdictDetail');
+
+  if (level === 0) {
+    statusLabel.textContent = 'clear to open';
+    verdictEl.textContent = 'Open the windows';
+    detailEl.textContent = `Outside air is cleaner and drier than typical indoor conditions. AQI ${Math.round(aqi)}, humidity ${Math.round(hum)}%.`;
+  } else if (level === 1) {
+    statusLabel.textContent = 'use your judgment';
+    verdictEl.textContent = 'Use your judgment';
+    detailEl.textContent = `Conditions are borderline — AQI ${Math.round(aqi)}, humidity ${Math.round(hum)}%. A short airing-out is fine, but don't leave windows open long.`;
+  } else {
+    statusLabel.textContent = 'keep shut';
+    verdictEl.textContent = 'Keep windows shut';
+    detailEl.textContent = `Outside air won't help right now — AQI ${Math.round(aqi)}, humidity ${Math.round(hum)}%. Let the AC and dehumidifier handle it.`;
+  }
+
+  renderScene(level);
+  renderOutlook();
+}
+
+function renderScene(level) {
+  // Paint the window scene to match conditions: clear coastal sky and blue
+  // channel water when it's good, hazier and more amber/orange as it worsens.
+  const palettes = {
+    0: { // good — clear marine layer burned off, blue sky and water
+      sky1: '#7FB3D5', sky2: '#4A7FA5',
+      water1: '#2E6E82', water2: '#1B4653',
+      hazeColor: '#D9A441', hazeOpacity: 0,
+      light: '#3CDB6E'
+    },
+    1: { // caution — hazy coastal overcast
+      sky1: '#9FA9A6', sky2: '#6E7876',
+      water1: '#3A5057', water2: '#233639',
+      hazeColor: '#C9B27A', hazeOpacity: 0.28,
+      light: '#E8C24A'
+    },
+    2: { // bad — smoggy/marine-layer socked-in
+      sky1: '#8A7A6B', sky2: '#5C4E44',
+      water1: '#38393A', water2: '#232323',
+      hazeColor: '#C97A4E', hazeOpacity: 0.55,
+      light: '#ff5c4d'
+    }
+  };
+  const p = palettes[level] || palettes[1];
+  document.getElementById('skyStop1').setAttribute('stop-color', p.sky1);
+  document.getElementById('skyStop2').setAttribute('stop-color', p.sky2);
+  document.getElementById('waterStop1').setAttribute('stop-color', p.water1);
+  document.getElementById('waterStop2').setAttribute('stop-color', p.water2);
+  const haze = document.getElementById('hazeOverlay');
+  haze.setAttribute('fill', p.hazeColor);
+  haze.setAttribute('opacity', p.hazeOpacity);
+  document.getElementById('breakwaterLight').setAttribute('fill', p.light);
+}
+
+function renderOutlook() {
+  const { times, humVals, dewVals, nowIdx } = liveData;
+  const endIdx = Math.min(nowIdx + 24, times.length);
+  const humSlice = humVals.slice(nowIdx, endIdx);
+  const dewNow = dewVals[nowIdx];
+
+  document.getElementById('outlookNow').textContent = `${Math.round(humVals[nowIdx])}%`;
+  document.getElementById('outlookDewpoint').textContent = `${Math.round(dewNow)}°`;
+
+  // Describe the trend in plain language, the way Apple Weather does
+  const maxHum = Math.max(...humSlice);
+  const minHum = Math.min(...humSlice);
+  const maxIdx = humSlice.indexOf(maxHum);
+  const minIdx = humSlice.indexOf(minHum);
+  const maxTime = new Date(times[nowIdx + maxIdx]);
+  const minTime = new Date(times[nowIdx + minIdx]);
+  const fmtHour = d => d.toLocaleTimeString([], { hour: 'numeric' });
+
+  let desc;
+  if (minIdx < maxIdx) {
+    desc = `Humidity is dropping to a low of ${Math.round(minHum)}% around ${fmtHour(minTime)}, then rising again to ${Math.round(maxHum)}% by ${fmtHour(maxTime)}.`;
+  } else {
+    desc = `Humidity is rising to a high of ${Math.round(maxHum)}% around ${fmtHour(maxTime)}, then easing back to ${Math.round(minHum)}% by ${fmtHour(minTime)}.`;
+  }
+  document.getElementById('outlookDesc').textContent = desc;
+
+  // Draw a simple sparkline
+  const svg = document.getElementById('outlookChart');
+  const w = 720, h = 120, pad = 10;
+  const range = Math.max(1, maxHum - minHum);
+  const points = humSlice.map((v, i) => {
+    const x = (i / (humSlice.length - 1)) * (w - pad * 2) + pad;
+    const y = h - pad - ((v - minHum) / range) * (h - pad * 2);
+    return [x, y];
+  });
+  const linePath = points.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+  const areaPath = linePath + ` L${points[points.length-1][0].toFixed(1)},${h} L${points[0][0].toFixed(1)},${h} Z`;
+
+  svg.innerHTML = `
+    <defs>
+      <linearGradient id="outlookFill" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#8FBFB0" stop-opacity="0.35"/>
+        <stop offset="100%" stop-color="#8FBFB0" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <path d="${areaPath}" fill="url(#outlookFill)" />
+    <path d="${linePath}" fill="none" stroke="#8FBFB0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  `;
+
+  const axis = document.getElementById('outlookAxis');
+  axis.innerHTML = '';
+  [0, 6, 12, 18, 23].forEach(offset => {
+    if (offset >= humSlice.length) return;
+    const d = new Date(times[nowIdx + offset]);
+    const span = document.createElement('span');
+    span.textContent = offset === 0 ? 'now' : fmtHour(d);
+    axis.appendChild(span);
+  });
+}
+
+(async function init() {
+  await loadThresholds();
+  await fetchData();
+})();
+</script>
+</body>
+</html>
