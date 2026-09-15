@@ -149,31 +149,32 @@
   /* ---- Data strip ---- */
   .data-strip{
     display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
     margin: 28px 0;
   }
   .card{
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 14px;
-    padding: 16px 16px;
+    padding: 14px 10px;
   }
   .card-label{
     font-family:'IBM Plex Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.1em;
+    font-size: 9px;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--foam);
     margin-bottom: 8px;
   }
   .card-value{
     font-family:'IBM Plex Mono', monospace;
-    font-size: 26px;
+    font-size: 21px;
     font-weight: 600;
   }
-  .card-unit{ font-size:13px; color: rgba(250,250,247,0.5); margin-left:3px; }
-  .card-note{ font-size:12px; color: rgba(250,250,247,0.5); margin-top:4px; }
+  .card-unit{ font-size:12px; color: rgba(250,250,247,0.5); margin-left:2px; }
+  .card-note{ font-size:11px; color: rgba(250,250,247,0.5); margin-top:4px; }
+  .card-caveat{ font-size:10px; color: rgba(250,250,247,0.35); margin-top:3px; line-height:1.35; }
   .last-updated{
     text-align:center;
     font-family:'IBM Plex Mono', monospace;
@@ -209,6 +210,82 @@
     transition: opacity 0.2s;
   }
   .btn:active{ opacity:0.8; }
+
+  /* ---- Window alert banner ---- */
+  .window-alert{
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 24px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .window-alert.good{ background: rgba(78,155,130,0.14); border-color: rgba(78,155,130,0.4); }
+  .window-alert.none{ background: rgba(255,255,255,0.04); }
+  .window-alert-title{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size: 16px;
+    margin-bottom: 4px;
+  }
+  .window-alert-body{
+    font-size: 12.5px;
+    color: rgba(250,250,247,0.7);
+    line-height:1.4;
+    margin-bottom: 12px;
+  }
+  .notif-btn{
+    width:100%;
+    background: rgba(255,255,255,0.08);
+    color: var(--white);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 8px;
+    padding: 10px;
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:12.5px;
+    cursor:pointer;
+  }
+  .notif-btn.on{ background: var(--foam); color: var(--navy-deep); border-color: var(--foam); }
+  .notif-btn:disabled{ opacity:0.5; cursor:default; }
+  .notif-caveat{
+    font-size: 10.5px;
+    color: rgba(250,250,247,0.4);
+    margin-top: 8px;
+    line-height:1.4;
+  }
+
+  /* ---- Forecast band charts ---- */
+  .forecast-wrap{ margin-bottom: 28px; }
+  .band-chart-card{
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 16px 16px 12px;
+    margin-bottom: 10px;
+  }
+  .band-chart-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom: 8px;
+  }
+  .band-chart-title{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size: 14px;
+  }
+  .band-chart-now{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+  }
+  .band-chart{ width:100%; height: 90px; display:block; }
+  .band-chart-axis{
+    display:flex;
+    justify-content:space-between;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: rgba(250,250,247,0.4);
+    margin-top: 4px;
+  }
 
   /* ---- Humidity Outlook ---- */
   .outlook-wrap{ margin-bottom: 28px; }
@@ -563,23 +640,68 @@
     <div class="verdict-detail" id="verdictDetail">Checking outdoor air quality and humidity.</div>
   </section>
 
+  <section id="windowAlert" class="window-alert none">
+    <div class="window-alert-title" id="windowAlertTitle">Reading the forecast…</div>
+    <div class="window-alert-body" id="windowAlertBody">Checking when conditions look best over the next couple days.</div>
+    <button class="notif-btn" id="notifToggle">Enable window alerts</button>
+    <div class="notif-caveat">Alerts fire while this app is open (or running in the background after being added to your Home Screen) — this is a browser page, not a server-pushed notification, so it won't wake your phone if the tab has been fully closed.</div>
+  </section>
+
   <section class="data-strip">
     <div class="card">
       <div class="card-label">Outdoor AQI</div>
       <div class="card-value" id="aqiValue">–</div>
       <div class="card-note" id="aqiNote">loading…</div>
+      <div class="card-caveat">PM2.5 only — no pollen, VOCs, or other allergens</div>
     </div>
     <div class="card">
-      <div class="card-label">Outdoor Humidity</div>
+      <div class="card-label">Outdoor Temp</div>
+      <div class="card-value" id="tempValue">–<span class="card-unit">°F</span></div>
+      <div class="card-note" id="tempNote">loading…</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Outdoor Hum.</div>
       <div class="card-value" id="humValue">–<span class="card-unit">%</span></div>
       <div class="card-note" id="humNote">loading…</div>
     </div>
   </section>
   <div id="lastUpdated" class="last-updated"></div>
 
+  <section class="forecast-wrap">
+    <div class="section-title">Conditions Forecast</div>
+    <div class="section-sub">Next 24 hours · shaded zones are your saved thresholds</div>
+
+    <div class="band-chart-card">
+      <div class="band-chart-top">
+        <div class="band-chart-title">Temperature</div>
+        <div class="band-chart-now" id="tempChartNow">–°F</div>
+      </div>
+      <svg id="tempChart" class="band-chart" viewBox="0 0 320 90" preserveAspectRatio="none"></svg>
+      <div class="band-chart-axis" id="tempChartAxis"></div>
+    </div>
+
+    <div class="band-chart-card">
+      <div class="band-chart-top">
+        <div class="band-chart-title">Humidity</div>
+        <div class="band-chart-now" id="humChartNow">–%</div>
+      </div>
+      <svg id="humChart" class="band-chart" viewBox="0 0 320 90" preserveAspectRatio="none"></svg>
+      <div class="band-chart-axis" id="humChartAxis"></div>
+    </div>
+
+    <div class="band-chart-card">
+      <div class="band-chart-top">
+        <div class="band-chart-title">AQI</div>
+        <div class="band-chart-now" id="aqiChartNow">–</div>
+      </div>
+      <svg id="aqiChart" class="band-chart" viewBox="0 0 320 90" preserveAspectRatio="none"></svg>
+      <div class="band-chart-axis" id="aqiChartAxis"></div>
+    </div>
+  </section>
+
   <section class="outlook-wrap">
     <div class="section-title">Humidity Outlook</div>
-    <div class="section-sub" id="outlookSub">Next 24 hours, forecast</div>
+    <div class="section-sub" id="outlookSub">Dew point &amp; plain-language trend</div>
     <div class="outlook-card">
       <div class="outlook-top">
         <div class="outlook-current">
@@ -592,8 +714,6 @@
         </div>
       </div>
       <div class="outlook-desc" id="outlookDesc">Loading forecast…</div>
-      <svg id="outlookChart" class="outlook-chart" viewBox="0 0 720 120" preserveAspectRatio="none"></svg>
-      <div class="outlook-axis" id="outlookAxis"></div>
     </div>
   </section>
 
@@ -658,7 +778,7 @@
     <button class="btn" id="saveThresholds" style="margin-top:14px;">Save thresholds</button>
   </details>
 
-  <footer>Outdoor data from Open-Meteo, PurpleAir & UCLA MAC · updates on refresh</footer>
+  <footer>Outdoor data from Open-Meteo, PurpleAir &amp; UCLA MAC · updates on refresh<br>AQI here reflects PM2.5 particulates only — not pollen, mold, or other allergens</footer>
 </div>
 
 <script>
@@ -855,7 +975,7 @@ async function fetchData() {
   try {
     const [aqiRes, wxRes, purpleAir, macConditions] = await Promise.all([
       fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${LAT}&longitude=${LON}&hourly=us_aqi,pm2_5&timezone=auto&forecast_days=2`),
-      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&hourly=relative_humidity_2m,dew_point_2m,cloud_cover&daily=sunrise,sunset&timezone=auto&forecast_days=3`),
+      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&hourly=relative_humidity_2m,dew_point_2m,cloud_cover,temperature_2m&daily=sunrise,sunset&timezone=auto&forecast_days=3`),
       fetchPurpleAirAqi(),
       fetchMacConditions()
     ]);
@@ -869,6 +989,7 @@ async function fetchData() {
     const humVals = wxJson.hourly.relative_humidity_2m;
     const dewVals = wxJson.hourly.dew_point_2m;
     const cloudVals = wxJson.hourly.cloud_cover;
+    const tempVals = wxJson.hourly.temperature_2m;
     const dailyTimes = wxJson.daily.time;
     const sunrises = wxJson.daily.sunrise;
     const sunsets = wxJson.daily.sunset;
@@ -881,7 +1002,7 @@ async function fetchData() {
       if (diff < bestDiff) { bestDiff = diff; nowIdx = i; }
     });
 
-    liveData = { times, aqiVals, pm25Vals, humVals, dewVals, cloudVals, dailyTimes, sunrises, sunsets, nowIdx, purpleAir, macConditions };
+    liveData = { times, aqiVals, pm25Vals, humVals, dewVals, cloudVals, tempVals, dailyTimes, sunrises, sunsets, nowIdx, purpleAir, macConditions };
     render();
   } catch (e) {
     errorBanner.style.display = 'block';
@@ -893,11 +1014,13 @@ async function fetchData() {
 
 function render() {
   if (!liveData) return;
-  const { times, aqiVals, pm25Vals, humVals, nowIdx, purpleAir, macConditions } = liveData;
+  const { times, aqiVals, pm25Vals, humVals, tempVals, nowIdx, purpleAir, macConditions } = liveData;
   const modeledAqi = aqiVals[nowIdx];
   const aqi = (purpleAir && typeof purpleAir.aqi === 'number') ? purpleAir.aqi : modeledAqi;
   const modeledHum = humVals[nowIdx];
   const hum = (macConditions && typeof macConditions.humidity === 'number') ? macConditions.humidity : modeledHum;
+  const modeledTemp = tempVals[nowIdx];
+  const temp = (macConditions && typeof macConditions.tempF === 'number') ? macConditions.tempF : modeledTemp;
   const pm25 = pm25Vals[nowIdx];
 
   document.getElementById('aqiValue').textContent = Math.round(aqi);
@@ -905,6 +1028,12 @@ function render() {
     document.getElementById('aqiNote').textContent = `PurpleAir · avg of ${purpleAir.sensorCount} sensors within ${purpleAir.maxDistanceMiles.toFixed(1)} mi`;
   } else {
     document.getElementById('aqiNote').textContent = `PM2.5 · ${pm25.toFixed(1)} µg/m³ (modeled)`;
+  }
+  document.getElementById('tempValue').innerHTML = `${Math.round(temp)}<span class="card-unit">°F</span>`;
+  if (macConditions && typeof macConditions.tempF === 'number') {
+    document.getElementById('tempNote').textContent = `UCLA MAC station${macConditions.observedAt ? ' · ' + macConditions.observedAt : ''}`;
+  } else {
+    document.getElementById('tempNote').textContent = 'modeled forecast';
   }
   document.getElementById('humValue').innerHTML = `${Math.round(hum)}<span class="card-unit">%</span>`;
   if (macConditions) {
@@ -941,6 +1070,8 @@ function render() {
 
   renderScene(level);
   renderOutlook();
+  renderWindowAlert();
+  renderForecastCharts();
 }
 
 function lerpColor(c1, c2, t) {
@@ -1079,44 +1210,234 @@ function renderOutlook() {
     desc = `Humidity is rising to a high of ${Math.round(maxHum)}% around ${fmtHour(maxTime)}, then easing back to ${Math.round(minHum)}% by ${fmtHour(minTime)}.`;
   }
   document.getElementById('outlookDesc').textContent = desc;
+}
 
-  // Draw a simple sparkline
-  const svg = document.getElementById('outlookChart');
-  const w = 720, h = 120, pad = 10;
-  const range = Math.max(1, maxHum - minHum);
-  const points = humSlice.map((v, i) => {
-    const x = (i / (humSlice.length - 1)) * (w - pad * 2) + pad;
-    const y = h - pad - ((v - minHum) / range) * (h - pad * 2);
-    return [x, y];
+// ---- Best window to open, and alerts ----
+
+function levelForIdx(i) {
+  return verdictFor(liveData.aqiVals[i], liveData.humVals[i]);
+}
+
+function findNextGoodWindow() {
+  const { aqiVals, humVals, nowIdx } = liveData;
+  const maxIdx = Math.min(nowIdx + 48, aqiVals.length, humVals.length);
+  let start = -1;
+  for (let i = nowIdx; i < maxIdx; i++) {
+    if (levelForIdx(i) === 0) { start = i; break; }
+  }
+  if (start === -1) return null;
+  let end = start;
+  while (end + 1 < maxIdx && levelForIdx(end + 1) === 0) end++;
+  return { startIdx: start, endIdx: end, isNow: start === nowIdx };
+}
+
+function fmtWindowTime(d) {
+  const today = new Date();
+  const tomorrow = new Date(today.getTime() + 86400000);
+  const dayPrefix = d.toDateString() === today.toDateString() ? ''
+    : d.toDateString() === tomorrow.toDateString() ? 'tomorrow '
+    : d.toLocaleDateString([], { weekday: 'short' }) + ' ';
+  return dayPrefix + d.toLocaleTimeString([], { hour: 'numeric' });
+}
+
+function renderWindowAlert() {
+  const { times } = liveData;
+  const titleEl = document.getElementById('windowAlertTitle');
+  const bodyEl = document.getElementById('windowAlertBody');
+  const bannerEl = document.getElementById('windowAlert');
+  const win = findNextGoodWindow();
+
+  if (!win) {
+    bannerEl.className = 'window-alert none';
+    titleEl.textContent = 'No clear window in the next 2 days';
+    bodyEl.textContent = 'Outdoor AQI or humidity is forecast to stay above your thresholds — let the AC and dehumidifier handle it for now.';
+    maybeNotify(null);
+    return;
+  }
+
+  const startT = new Date(times[win.startIdx]);
+  const endT = new Date(times[win.endIdx]);
+  bannerEl.className = 'window-alert good';
+  if (win.isNow) {
+    titleEl.textContent = `Good now — through ${fmtWindowTime(endT)}`;
+  } else {
+    titleEl.textContent = `Next good window: ${fmtWindowTime(startT)}–${fmtWindowTime(endT)}`;
+  }
+  bodyEl.textContent = 'Based on the forecast for outdoor AQI and humidity against your saved thresholds.';
+  maybeNotify(win);
+}
+
+const NOTIF_PREF_KEY = 'notifEnabled';
+let scheduledNotifTimer = null;
+
+function notifEnabled() {
+  return storageGet(NOTIF_PREF_KEY) === true;
+}
+
+function updateNotifButton() {
+  const btn = document.getElementById('notifToggle');
+  if (!('Notification' in window)) {
+    btn.textContent = 'Alerts not supported in this browser';
+    btn.disabled = true;
+    btn.classList.remove('on');
+    return;
+  }
+  if (Notification.permission === 'denied') {
+    btn.textContent = 'Alerts blocked — check browser settings';
+    btn.disabled = true;
+    btn.classList.remove('on');
+    return;
+  }
+  const on = Notification.permission === 'granted' && notifEnabled();
+  btn.disabled = false;
+  btn.textContent = on ? 'Window alerts on' : 'Enable window alerts';
+  btn.classList.toggle('on', on);
+}
+
+function setupNotifButton() {
+  const btn = document.getElementById('notifToggle');
+  updateNotifButton();
+  btn.addEventListener('click', async () => {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'granted') {
+      storageSet(NOTIF_PREF_KEY, !notifEnabled());
+      updateNotifButton();
+      renderWindowAlert();
+      return;
+    }
+    const perm = await Notification.requestPermission();
+    if (perm === 'granted') storageSet(NOTIF_PREF_KEY, true);
+    updateNotifButton();
+    renderWindowAlert();
   });
+}
+
+function maybeNotify(win) {
+  clearTimeout(scheduledNotifTimer);
+  if (!('Notification' in window) || Notification.permission !== 'granted' || !notifEnabled() || !win) return;
+  const { times } = liveData;
+  const startT = new Date(times[win.startIdx]);
+  const key = 'notified-' + startT.toISOString();
+
+  const fire = () => {
+    if (storageGet('lastNotifiedKey') === key) return;
+    new Notification('Window Watch', {
+      body: 'Good time to open the windows — outdoor air and humidity are within your thresholds right now.',
+      tag: 'window-watch'
+    });
+    storageSet('lastNotifiedKey', key);
+  };
+
+  if (win.isNow) {
+    fire();
+  } else {
+    const msUntil = startT - new Date();
+    // Only worth scheduling if this tab/app stays open until then — beyond a
+    // few hours it's more reliable to just let the next refresh catch it.
+    if (msUntil > 0 && msUntil < 6 * 3600 * 1000) {
+      scheduledNotifTimer = setTimeout(fire, msUntil);
+    }
+  }
+}
+
+// ---- Banded forecast charts ----
+
+function drawBandChart(svgId, series, opts) {
+  const svg = document.getElementById(svgId);
+  const w = 320, h = 90, pad = 6;
+  const min = opts.min, max = opts.max, range = max - min;
+  const y = v => h - pad - ((Math.max(min, Math.min(max, v)) - min) / range) * (h - pad * 2);
+
+  let bandRects = '';
+  (opts.bands || []).forEach(b => {
+    const y1 = y(Math.min(b.to, max));
+    const y2 = y(Math.max(b.from, min));
+    bandRects += `<rect x="0" y="${y1.toFixed(1)}" width="${w}" height="${Math.max(0, y2 - y1).toFixed(1)}" fill="${b.color}" fill-opacity="0.16"/>`;
+  });
+
+  const points = series.map((v, i) => [(i / (series.length - 1)) * (w - pad * 2) + pad, y(v)]);
   const linePath = points.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
-  const areaPath = linePath + ` L${points[points.length-1][0].toFixed(1)},${h} L${points[0][0].toFixed(1)},${h} Z`;
+  const cur = points[0];
 
   svg.innerHTML = `
-    <defs>
-      <linearGradient id="outlookFill" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#8FBFB0" stop-opacity="0.35"/>
-        <stop offset="100%" stop-color="#8FBFB0" stop-opacity="0"/>
-      </linearGradient>
-    </defs>
-    <path d="${areaPath}" fill="url(#outlookFill)" />
-    <path d="${linePath}" fill="none" stroke="#8FBFB0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    ${bandRects}
+    <path d="${linePath}" fill="none" stroke="${opts.lineColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="${cur[0].toFixed(1)}" cy="${cur[1].toFixed(1)}" r="4" fill="${opts.dotColor}" stroke="#0B2A3D" stroke-width="1.5"/>
   `;
+}
 
-  const axis = document.getElementById('outlookAxis');
+function drawChartAxis(axisId, times, nowIdx, sliceLen) {
+  const axis = document.getElementById(axisId);
   axis.innerHTML = '';
-  [0, 6, 12, 18, 23].forEach(offset => {
-    if (offset >= humSlice.length) return;
+  const offsets = [0, 6, 12, 18, sliceLen - 1];
+  offsets.forEach(offset => {
+    if (offset >= sliceLen) return;
     const d = new Date(times[nowIdx + offset]);
     const span = document.createElement('span');
-    span.textContent = offset === 0 ? 'now' : fmtHour(d);
+    span.textContent = offset === 0 ? 'now' : d.toLocaleTimeString([], { hour: 'numeric' });
     axis.appendChild(span);
   });
+}
+
+const LEVEL_COLOR = { 0: '#4E9B82', 1: '#D9A441', 2: '#D9714E' };
+
+function renderForecastCharts() {
+  const { times, aqiVals, humVals, tempVals, nowIdx, purpleAir, macConditions } = liveData;
+  const endIdx = Math.min(nowIdx + 24, times.length, aqiVals.length, humVals.length, tempVals.length);
+  const sliceLen = endIdx - nowIdx;
+
+  const humSeries = humVals.slice(nowIdx, endIdx);
+  const aqiSeries = aqiVals.slice(nowIdx, endIdx);
+  const tempSeries = tempVals.slice(nowIdx, endIdx);
+  if (purpleAir && typeof purpleAir.aqi === 'number') aqiSeries[0] = purpleAir.aqi;
+  if (macConditions) {
+    if (typeof macConditions.humidity === 'number') humSeries[0] = macConditions.humidity;
+    if (typeof macConditions.tempF === 'number') tempSeries[0] = macConditions.tempF;
+  }
+
+  const curLevel = verdictFor(aqiSeries[0], humSeries[0]);
+
+  // Temp — comfort reference band only, doesn't drive the verdict
+  const tMin = Math.min(55, ...tempSeries) - 3;
+  const tMax = Math.max(85, ...tempSeries) + 3;
+  drawBandChart('tempChart', tempSeries, {
+    min: tMin, max: tMax, lineColor: '#D9714E', dotColor: '#D9714E',
+    bands: [{ from: 65, to: 75, color: '#4E9B82' }]
+  });
+  document.getElementById('tempChartNow').textContent = `${Math.round(tempSeries[0])}°F`;
+  drawChartAxis('tempChartAxis', times, nowIdx, sliceLen);
+
+  // Humidity — bands from saved thresholds
+  const hMin = 20, hMax = Math.max(100, ...humSeries) + 3;
+  drawBandChart('humChart', humSeries, {
+    min: hMin, max: hMax, lineColor: '#8FBFB0', dotColor: LEVEL_COLOR[curLevel],
+    bands: [
+      { from: hMin, to: thresholds.humGood, color: '#4E9B82' },
+      { from: thresholds.humGood, to: thresholds.humCaution, color: '#D9A441' },
+      { from: thresholds.humCaution, to: hMax, color: '#D9714E' }
+    ]
+  });
+  document.getElementById('humChartNow').textContent = `${Math.round(humSeries[0])}%`;
+  drawChartAxis('humChartAxis', times, nowIdx, sliceLen);
+
+  // AQI — bands from saved thresholds
+  const aMin = 0, aMax = Math.max(150, ...aqiSeries) + 5;
+  drawBandChart('aqiChart', aqiSeries, {
+    min: aMin, max: aMax, lineColor: '#D9A441', dotColor: LEVEL_COLOR[curLevel],
+    bands: [
+      { from: aMin, to: thresholds.aqiGood, color: '#4E9B82' },
+      { from: thresholds.aqiGood, to: thresholds.aqiCaution, color: '#D9A441' },
+      { from: thresholds.aqiCaution, to: aMax, color: '#D9714E' }
+    ]
+  });
+  document.getElementById('aqiChartNow').textContent = Math.round(aqiSeries[0]);
+  drawChartAxis('aqiChartAxis', times, nowIdx, sliceLen);
 }
 
 (async function init() {
   await loadThresholds();
   loadIndoorSources();
+  setupNotifButton();
   await fetchData();
 })();
 </script>
